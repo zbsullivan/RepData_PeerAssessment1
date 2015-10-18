@@ -1,9 +1,4 @@
----
-title: "Reproducible Research: Peer Assessment 1"
-output: 
-  html_document:
-    keep_md: true
----
+# Reproducible Research: Peer Assessment 1
 
 
 
@@ -13,7 +8,8 @@ output:
 
 
 ###1. Load the data
-```{r cache=TRUE}
+
+```r
 setwd("~/School Related Documents/Coursera/datascience/Reproducible Research/Assignment1")
 
 activity <- read.csv("activity/activity.csv")
@@ -23,7 +19,8 @@ activity <- read.csv("activity/activity.csv")
 
 ###2. Process interval data to create time variable
 
-```{r}
+
+```r
 activity$hour <- trunc(activity$interval/100)
 activity$minute <- activity$interval - 100*activity$hour
 
@@ -31,12 +28,12 @@ activity$minute[activity$minute < 9] <-
         paste("0", activity$minute[activity$minute < 9], sep = "")
 
 activity$time <- paste(activity$hour, activity$minute, "00", sep = ":")
-
 ```
 
 Convert new time variable to "times" class using the chron package
 
-```{r}
+
+```r
 library(chron)
 activity$time <- chron(times. = activity$time)
 ```
@@ -54,33 +51,60 @@ activity$time <- chron(times. = activity$time)
 
 I interpret this to mean calculate the total number of steps taken each day. I have produced a table summarizing this, and print the first 6 rows of that table below. I created this summary using the dplyr package.
 
-```{r message=FALSE}
+
+```r
 library(dplyr)
 perday <- activity %>% group_by(date) %>% summarize(steps = sum(steps, na.rm=T))
 
 head(perday)
 ```
 
+```
+## Source: local data frame [6 x 2]
+## 
+##         date steps
+##       (fctr) (int)
+## 1 2012-10-01     0
+## 2 2012-10-02   126
+## 3 2012-10-03 11352
+## 4 2012-10-04 12116
+## 5 2012-10-05 13294
+## 6 2012-10-06 15420
+```
+
 
 
 ### 2. Plot a histogram of the number of steps taken per day
 
-```{r}
+
+```r
 hist(perday$steps, xlab = "Number of Steps", ylab = "Number of Days", main = "Histogram of Steps per Day")
 ```
+
+![](PA1_template_files/figure-html/unnamed-chunk-5-1.png) 
 
 
 
 ### 3. What is the mean and median number of steps taken per day?
 
 Mean:
-```{r}
+
+```r
 mean(perday$steps)
 ```
 
+```
+## [1] 9354.23
+```
+
 Median:
-```{r}
+
+```r
 median(perday$steps)
+```
+
+```
+## [1] 10395
 ```
 
 
@@ -96,22 +120,31 @@ median(perday$steps)
 
 Create data frame giving the mean activity for each time period using the dplyr package
 
-```{r}
+
+```r
 perperiod <- activity %>% group_by(time) %>% summarise(msteps = mean(steps, na.rm=T))
 ```
 
 Chart the data
 
-```{r}
+
+```r
 with(perperiod, plot(time, msteps, type = "l", ylab = "Mean Number of Steps", xaxt="n"))
 title(main = "Mean Number of Steps per 5 Minute Interval")
 axis(1, at = 0:6/6, labels = paste(4*0:6, "00", sep=":"))
 ```
 
+![](PA1_template_files/figure-html/unnamed-chunk-9-1.png) 
+
 ###2. Report time period with most activity
 
-```{r}
+
+```r
 perperiod$time[perperiod$msteps == max(perperiod$msteps)]
+```
+
+```
+## [1] 08:35:00
 ```
 
 
@@ -125,8 +158,13 @@ perperiod$time[perperiod$msteps == max(perperiod$msteps)]
 
 ###1. Calculate number of rows with missing steps data:
 
-```{r}
+
+```r
 nrow(activity[is.na(activity$steps),])
+```
+
+```
+## [1] 2304
 ```
 
 
@@ -142,7 +180,8 @@ I will insert the mean of each time period when data is missing.
 A. Copy activity data set
 B. If steps variable is NA, insert mean number of steps from the perperiod data frame created for the analysis of the daily activity pattern.
 
-```{r}
+
+```r
 activity2 <- activity
 
 for(i in 1:nrow(perperiod)){
@@ -156,45 +195,82 @@ for(i in 1:nrow(perperiod)){
 
 Create table of total daily activity
 
-```{r}
+
+```r
 perday2 <- activity2 %>% group_by(date) %>% summarize(steps = sum(steps, na.rm=T))
 
 head(perday)
 ```
 
+```
+## Source: local data frame [6 x 2]
+## 
+##         date steps
+##       (fctr) (int)
+## 1 2012-10-01     0
+## 2 2012-10-02   126
+## 3 2012-10-03 11352
+## 4 2012-10-04 12116
+## 5 2012-10-05 13294
+## 6 2012-10-06 15420
+```
+
 Show histogram of daily activity with missing values imputed
 
-```{r}
+
+```r
 hist(perday2$steps, xlab = "Number of Steps", ylab = "Number of Days", main = "Histogram of Steps per Day, 
 Missing Values Imputed")
 ```
 
+![](PA1_template_files/figure-html/unnamed-chunk-14-1.png) 
+
 Show Mean and Median and differences between originals and values with missing values imputed.
 
 Mean:
-```{r}
+
+```r
 mean(perday2$steps)
+```
+
+```
+## [1] 10766.19
 ```
 
 Difference in means:
 
-```{r}
+
+```r
 mean(perday2$steps)- mean(perday$steps)
 ```
 
-The mean number of steps with missing values imputed is `r mean(perday2$steps)- mean(perday$steps)` greater than without the imputed values.
+```
+## [1] 1411.959
+```
+
+The mean number of steps with missing values imputed is 1411.959171 greater than without the imputed values.
 
 Median:
-```{r}
+
+```r
 median(perday2$steps)
 ```
 
+```
+## [1] 10766.19
+```
+
 Difference in medians:
-```{r}
+
+```r
 median(perday2$steps) - median(perday$steps)
 ```
 
-The median number of steps with missing values imputed is `r median(perday2$steps) - median(perday$steps)` greater than without the imputed values.
+```
+## [1] 371.1887
+```
+
+The median number of steps with missing values imputed is 371.1886792 greater than without the imputed values.
 
 
 
@@ -209,7 +285,8 @@ The median number of steps with missing values imputed is `r median(perday2$step
 
 Create fields denoting the day of the week and showing whether the day is a week day or weekend. Use the activity2 data frame, which includes imputed values, for this analysis.
 
-```{r}
+
+```r
 activity2$day <- weekdays(as.Date(activity2$date), abbreviate = T)
 activity2$weekend[activity2$day %in% c("Sat", "Sun")] <- "Weekend"
 activity2$weekend[activity2$day %in% c("Mon", "Tue", "Wed", "Thu", "Fri")] <- "Week Day"
@@ -221,14 +298,16 @@ activity2$weekend <- as.character(activity2$weekend)
 
 Create Data Set giving the per period averages for week days and weekends
 
-```{r}
+
+```r
 perperiod2 <- activity2 %>% group_by(weekend, time) %>% summarise(msteps = mean(steps, na.rm=T))
 ```
 
 
 Plot per period activity using the ggplot2 package
 
-```{r, message=FALSE}
+
+```r
 library(ggplot2)
 
 plot_perperiod <- ggplot(data = perperiod2, aes(x=time, y=msteps)) + geom_line() 
@@ -240,3 +319,5 @@ plot_perperiod <- plot_perperiod + facet_grid( .~ weekend)
 
 plot_perperiod
 ```
+
+![](PA1_template_files/figure-html/unnamed-chunk-21-1.png) 
